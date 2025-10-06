@@ -268,6 +268,20 @@ a:not([href]) {
 	flex-shrink: 0;
 }
 
+.list-grid {
+	display: flex;
+	flex-wrap: wrap;
+	/* allow wrapping into multiple rows */
+	flex-direction: row;
+	/* row instead of column */
+	gap: 1rem;
+	/* spacing between items */
+	padding-left: 0;
+	margin-bottom: 0;
+	border-radius: .25rem;
+	justify-content: center;
+}
+
 /* Always show modals over everything else */
 .modal {
 	z-index: 99998;

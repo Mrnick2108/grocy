@@ -16,16 +16,11 @@ class StockController extends BaseController
 	{
 		parent::__construct($container);
 
-		try
-		{
+		try {
 			$externalBarcodeLookupPluginName = $this->getStockService()->GetExternalBarcodeLookupPluginName();
-		}
-		catch (\Exception)
-		{
+		} catch (\Exception) {
 			$externalBarcodeLookupPluginName = '';
-		}
-		finally
-		{
+		} finally {
 			$this->View->set('ExternalBarcodeLookupPluginName', $externalBarcodeLookupPluginName);
 		}
 	}
@@ -57,19 +52,15 @@ class StockController extends BaseController
 
 	public function Journal(Request $request, Response $response, array $args)
 	{
-		if (isset($request->getQueryParams()['months']) && filter_var($request->getQueryParams()['months'], FILTER_VALIDATE_INT) !== false)
-		{
+		if (isset($request->getQueryParams()['months']) && filter_var($request->getQueryParams()['months'], FILTER_VALIDATE_INT) !== false) {
 			$months = $request->getQueryParams()['months'];
 			$where = "row_created_timestamp > DATE(DATE('now', 'localtime'), '-$months months')";
-		}
-		else
-		{
+		} else {
 			// Default 6 months
 			$where = "row_created_timestamp > DATE(DATE('now', 'localtime'), '-6 months')";
 		}
 
-		if (isset($request->getQueryParams()['product']) && filter_var($request->getQueryParams()['product'], FILTER_VALIDATE_INT) !== false)
-		{
+		if (isset($request->getQueryParams()['product']) && filter_var($request->getQueryParams()['product'], FILTER_VALIDATE_INT) !== false) {
 			$productId = $request->getQueryParams()['product'];
 			$where .= " AND product_id = $productId";
 		}
@@ -99,15 +90,12 @@ class StockController extends BaseController
 
 	public function LocationEditForm(Request $request, Response $response, array $args)
 	{
-		if ($args['locationId'] == 'new')
-		{
+		if ($args['locationId'] == 'new') {
 			return $this->renderPage($response, 'locationform', [
 				'mode' => 'create',
 				'userfields' => $this->getUserfieldsService()->GetFields('locations')
 			]);
-		}
-		else
-		{
+		} else {
 			return $this->renderPage($response, 'locationform', [
 				'location' => $this->getDatabase()->locations($args['locationId']),
 				'mode' => 'edit',
@@ -118,12 +106,9 @@ class StockController extends BaseController
 
 	public function LocationsList(Request $request, Response $response, array $args)
 	{
-		if (isset($request->getQueryParams()['include_disabled']))
-		{
+		if (isset($request->getQueryParams()['include_disabled'])) {
 			$locations = $this->getDatabase()->locations()->orderBy('name', 'COLLATE NOCASE');
-		}
-		else
-		{
+		} else {
 			$locations = $this->getDatabase()->locations()->where('active = 1')->orderBy('name', 'COLLATE NOCASE');
 		}
 
@@ -141,8 +126,7 @@ class StockController extends BaseController
 		$nextXDays = $userSettings['stock_due_soon_days'];
 
 		$where = 'is_in_stock_or_below_min_stock = 1';
-		if (boolval($userSettings['stock_overview_show_all_out_of_stock_products']))
-		{
+		if (boolval($userSettings['stock_overview_show_all_out_of_stock_products'])) {
 			$where = '1=1';
 		}
 
@@ -160,13 +144,11 @@ class StockController extends BaseController
 	public function ProductBarcodesEditForm(Request $request, Response $response, array $args)
 	{
 		$product = null;
-		if (isset($request->getQueryParams()['product']))
-		{
+		if (isset($request->getQueryParams()['product'])) {
 			$product = $this->getDatabase()->products($request->getQueryParams()['product']);
 		}
 
-		if ($args['productBarcodeId'] == 'new')
-		{
+		if ($args['productBarcodeId'] == 'new') {
 			return $this->renderPage($response, 'productbarcodeform', [
 				'mode' => 'create',
 				'barcodes' => $this->getDatabase()->product_barcodes()->orderBy('barcode'),
@@ -176,9 +158,7 @@ class StockController extends BaseController
 				'quantityUnitConversionsResolved' => $this->getDatabase()->cache__quantity_unit_conversions_resolved(),
 				'userfields' => $this->getUserfieldsService()->GetFields('product_barcodes')
 			]);
-		}
-		else
-		{
+		} else {
 			return $this->renderPage($response, 'productbarcodeform', [
 				'mode' => 'edit',
 				'barcode' => $this->getDatabase()->product_barcodes($args['productBarcodeId']),
@@ -193,8 +173,7 @@ class StockController extends BaseController
 
 	public function ProductEditForm(Request $request, Response $response, array $args)
 	{
-		if ($args['productId'] == 'new')
-		{
+		if ($args['productId'] == 'new') {
 			return $this->renderPage($response, 'productform', [
 				'locations' => $this->getDatabase()->locations()->where('active = 1')->orderBy('name'),
 				'barcodes' => $this->getDatabase()->product_barcodes()->orderBy('barcode'),
@@ -208,9 +187,7 @@ class StockController extends BaseController
 				'isSubProductOfOthers' => false,
 				'mode' => 'create'
 			]);
-		}
-		else
-		{
+		} else {
 			$product = $this->getDatabase()->products($args['productId']);
 
 			return $this->renderPage($response, 'productform', [
@@ -241,15 +218,12 @@ class StockController extends BaseController
 
 	public function ProductGroupEditForm(Request $request, Response $response, array $args)
 	{
-		if ($args['productGroupId'] == 'new')
-		{
+		if ($args['productGroupId'] == 'new') {
 			return $this->renderPage($response, 'productgroupform', [
 				'mode' => 'create',
 				'userfields' => $this->getUserfieldsService()->GetFields('product_groups')
 			]);
-		}
-		else
-		{
+		} else {
 			return $this->renderPage($response, 'productgroupform', [
 				'group' => $this->getDatabase()->product_groups($args['productGroupId']),
 				'mode' => 'edit',
@@ -260,12 +234,9 @@ class StockController extends BaseController
 
 	public function ProductGroupsList(Request $request, Response $response, array $args)
 	{
-		if (isset($request->getQueryParams()['include_disabled']))
-		{
+		if (isset($request->getQueryParams()['include_disabled'])) {
 			$productGroups = $this->getDatabase()->product_groups()->orderBy('name', 'COLLATE NOCASE');
-		}
-		else
-		{
+		} else {
 			$productGroups = $this->getDatabase()->product_groups()->where('active = 1')->orderBy('name', 'COLLATE NOCASE');
 		}
 
@@ -280,17 +251,14 @@ class StockController extends BaseController
 	public function ProductsList(Request $request, Response $response, array $args)
 	{
 		$products = $this->getDatabase()->products();
-		if (!isset($request->getQueryParams()['include_disabled']))
-		{
+		if (!isset($request->getQueryParams()['include_disabled'])) {
 			$products = $products->where('active = 1');
 		}
 
-		if (isset($request->getQueryParams()['only_in_stock']))
-		{
+		if (isset($request->getQueryParams()['only_in_stock'])) {
 			$products = $products->where('id IN (SELECT product_id from stock_current WHERE amount_aggregated > 0)');
 		}
-		if (isset($request->getQueryParams()['only_out_of_stock']))
-		{
+		if (isset($request->getQueryParams()['only_out_of_stock'])) {
 			$products = $products->where('id NOT IN (SELECT product_id from stock_current WHERE amount_aggregated > 0)');
 		}
 
@@ -323,20 +291,17 @@ class StockController extends BaseController
 	public function QuantityUnitConversionEditForm(Request $request, Response $response, array $args)
 	{
 		$product = null;
-		if (isset($request->getQueryParams()['product']))
-		{
+		if (isset($request->getQueryParams()['product'])) {
 			$product = $this->getDatabase()->products($request->getQueryParams()['product']);
 		}
 
 		$defaultQuUnit = null;
 
-		if (isset($request->getQueryParams()['qu-unit']))
-		{
+		if (isset($request->getQueryParams()['qu-unit'])) {
 			$defaultQuUnit = $this->getDatabase()->quantity_units($request->getQueryParams()['qu-unit']);
 		}
 
-		if ($args['quConversionId'] == 'new')
-		{
+		if ($args['quConversionId'] == 'new') {
 			return $this->renderPage($response, 'quantityunitconversionform', [
 				'mode' => 'create',
 				'userfields' => $this->getUserfieldsService()->GetFields('quantity_unit_conversions'),
@@ -344,9 +309,7 @@ class StockController extends BaseController
 				'product' => $product,
 				'defaultQuUnit' => $defaultQuUnit
 			]);
-		}
-		else
-		{
+		} else {
 			return $this->renderPage($response, 'quantityunitconversionform', [
 				'quConversion' => $this->getDatabase()->quantity_unit_conversions($args['quConversionId']),
 				'mode' => 'edit',
@@ -360,17 +323,14 @@ class StockController extends BaseController
 
 	public function QuantityUnitEditForm(Request $request, Response $response, array $args)
 	{
-		if ($args['quantityunitId'] == 'new')
-		{
+		if ($args['quantityunitId'] == 'new') {
 			return $this->renderPage($response, 'quantityunitform', [
 				'mode' => 'create',
 				'userfields' => $this->getUserfieldsService()->GetFields('quantity_units'),
 				'pluralCount' => $this->getLocalizationService()->GetPluralCount(),
 				'pluralRule' => $this->getLocalizationService()->GetPluralDefinition()
 			]);
-		}
-		else
-		{
+		} else {
 			$quantityUnit = $this->getDatabase()->quantity_units($args['quantityunitId']);
 
 			return $this->renderPage($response, 'quantityunitform', [
@@ -394,12 +354,9 @@ class StockController extends BaseController
 
 	public function QuantityUnitsList(Request $request, Response $response, array $args)
 	{
-		if (isset($request->getQueryParams()['include_disabled']))
-		{
+		if (isset($request->getQueryParams()['include_disabled'])) {
 			$quantityUnits = $this->getDatabase()->quantity_units()->orderBy('name', 'COLLATE NOCASE');
-		}
-		else
-		{
+		} else {
 			$quantityUnits = $this->getDatabase()->quantity_units()->where('active = 1')->orderBy('name', 'COLLATE NOCASE');
 		}
 
@@ -413,8 +370,7 @@ class StockController extends BaseController
 	public function ShoppingList(Request $request, Response $response, array $args)
 	{
 		$listId = 1;
-		if (isset($request->getQueryParams()['list']))
-		{
+		if (isset($request->getQueryParams()['list'])) {
 			$listId = $request->getQueryParams()['list'];
 		}
 
@@ -437,15 +393,12 @@ class StockController extends BaseController
 
 	public function ShoppingListEditForm(Request $request, Response $response, array $args)
 	{
-		if ($args['listId'] == 'new')
-		{
+		if ($args['listId'] == 'new') {
 			return $this->renderPage($response, 'shoppinglistform', [
 				'mode' => 'create',
 				'userfields' => $this->getUserfieldsService()->GetFields('shopping_lists')
 			]);
-		}
-		else
-		{
+		} else {
 			return $this->renderPage($response, 'shoppinglistform', [
 				'shoppingList' => $this->getDatabase()->shopping_lists($args['listId']),
 				'mode' => 'edit',
@@ -456,8 +409,7 @@ class StockController extends BaseController
 
 	public function ShoppingListItemEditForm(Request $request, Response $response, array $args)
 	{
-		if ($args['itemId'] == 'new')
-		{
+		if ($args['itemId'] == 'new') {
 			return $this->renderPage($response, 'shoppinglistitemform', [
 				'products' => $this->getDatabase()->products()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
 				'barcodes' => $this->getDatabase()->product_barcodes_comma_separated(),
@@ -467,9 +419,7 @@ class StockController extends BaseController
 				'quantityUnitConversionsResolved' => $this->getDatabase()->cache__quantity_unit_conversions_resolved(),
 				'userfields' => $this->getUserfieldsService()->GetFields('shopping_list')
 			]);
-		}
-		else
-		{
+		} else {
 			return $this->renderPage($response, 'shoppinglistitemform', [
 				'listItem' => $this->getDatabase()->shopping_list($args['itemId']),
 				'products' => $this->getDatabase()->products()->where('active = 1')->orderBy('name', 'COLLATE NOCASE'),
@@ -492,15 +442,12 @@ class StockController extends BaseController
 
 	public function ShoppingLocationEditForm(Request $request, Response $response, array $args)
 	{
-		if ($args['shoppingLocationId'] == 'new')
-		{
+		if ($args['shoppingLocationId'] == 'new') {
 			return $this->renderPage($response, 'shoppinglocationform', [
 				'mode' => 'create',
 				'userfields' => $this->getUserfieldsService()->GetFields('shopping_locations')
 			]);
-		}
-		else
-		{
+		} else {
 			return $this->renderPage($response, 'shoppinglocationform', [
 				'shoppingLocation' => $this->getDatabase()->shopping_locations($args['shoppingLocationId']),
 				'mode' => 'edit',
@@ -511,12 +458,9 @@ class StockController extends BaseController
 
 	public function ShoppingLocationsList(Request $request, Response $response, array $args)
 	{
-		if (isset($request->getQueryParams()['include_disabled']))
-		{
+		if (isset($request->getQueryParams()['include_disabled'])) {
 			$shoppingLocations = $this->getDatabase()->shopping_locations()->orderBy('name', 'COLLATE NOCASE');
-		}
-		else
-		{
+		} else {
 			$shoppingLocations = $this->getDatabase()->shopping_locations()->where('active = 1')->orderBy('name', 'COLLATE NOCASE');
 		}
 
@@ -597,16 +541,13 @@ class StockController extends BaseController
 	public function JournalSummary(Request $request, Response $response, array $args)
 	{
 		$entries = $this->getDatabase()->uihelper_stock_journal_summary();
-		if (isset($request->getQueryParams()['product_id']))
-		{
+		if (isset($request->getQueryParams()['product_id'])) {
 			$entries = $entries->where('product_id', $request->getQueryParams()['product_id']);
 		}
-		if (isset($request->getQueryParams()['user_id']))
-		{
+		if (isset($request->getQueryParams()['user_id'])) {
 			$entries = $entries->where('user_id', $request->getQueryParams()['user_id']);
 		}
-		if (isset($request->getQueryParams()['transaction_type']))
-		{
+		if (isset($request->getQueryParams()['transaction_type'])) {
 			$entries = $entries->where('transaction_type', $request->getQueryParams()['transaction_type']);
 		}
 
@@ -622,13 +563,10 @@ class StockController extends BaseController
 	public function QuantityUnitConversionsResolved(Request $request, Response $response, array $args)
 	{
 		$product = null;
-		if (isset($request->getQueryParams()['product']))
-		{
+		if (isset($request->getQueryParams()['product'])) {
 			$product = $this->getDatabase()->products($request->getQueryParams()['product']);
 			$quantityUnitConversionsResolved = $this->getDatabase()->cache__quantity_unit_conversions_resolved()->where('product_id', $product->id);
-		}
-		else
-		{
+		} else {
 			$quantityUnitConversionsResolved = $this->getDatabase()->cache__quantity_unit_conversions_resolved()->where('product_id IS NULL');
 		}
 

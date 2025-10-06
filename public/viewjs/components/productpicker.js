@@ -282,7 +282,87 @@ $('#product_id_text_input').on('blur', function(e)
 								}
 								else
 								{
-									window.location.href = U("/product/" + pluginResponse.id + "?flow=InplaceNewProductByExternalBarcodeLookupPlugin&returnto=" + encodeURIComponent(Grocy.CurrentUrlRelative + "?flow=InplaceNewProductWithName&" + embedded) + "&" + embedded);
+									//check if plpluginResponse is an array and if so dislay a windows with the options to choose from add in the __image_url if available
+									//otherwise just proceed as before
+									if (Array.isArray(pluginResponse))
+									{
+										var itemsList = '<div class="list-grid">';
+										pluginResponse.forEach(function(item, index)
+										{
+											//itemsList += '<button type="button" class="list-group-item list-group-item-action select-external-barcode-lookup-item-button" data-index="' + index + '">' +
+											//	(item.name || '') + (item.brand ? ' (' + item.brand + ')' : '') + (item.quantity ? ' - ' + item.quantity : '') +
+											//	'</button>';
+											itemsList += `
+														<button type="button"
+															class="select-external-barcode-lookup-item-button p-2"
+															data-index="${index}"
+															style="width: 220px; border: 1px solid #fff; border-radius: 8px; background-color: #f8f9fa; text-align: center;">
+															
+															<div>
+																${item.__image_url 
+																	? `<img src="${item.__image_url}" alt="${item.name}" style="width:200px; height:200px; object-fit: cover; border-radius: 6px;">`
+																	: `<div style="width:200px; height:200px; background:#e9ecef; display:flex; align-items:center; justify-content:center; border-radius:6px;">No Image</div>`}
+															</div>
+															
+															<div class="mt-2">
+																<div class="fw-bold">${item.name || ''}</div>
+																${item.brand ? `<div>${item.brand}</div>` : ''}
+																${item.quantity ? `<div class="text-muted small">${item.quantity}</div>` : ''}
+															</div>
+														</button>
+													`;
+										});
+										itemsList += '</div>';
+										bootbox.dialog({
+											message: itemsList,
+											title: __t('Select item'),
+											size: 'large',
+											onEscape: function()
+											{
+												$(".productpicker-workflow-cancel-button").click();
+											}
+										});
+										$(document).off("click", ".select-external-barcode-lookup-item-button");
+										$(document).on("click", ".select-external-barcode-lookup-item-button", function(e)
+										{
+											var index = $(e.currentTarget).attr("data-index");
+											var selectedItem = pluginResponse[index];
+											var jsonData = { selectedProduct: selectedItem, add: "true" };
+											
+											
+											Grocy.Api.Post("stock/barcodes/save-barcode", jsonData,
+												function(pluginResponse)
+												{
+													if (pluginResponse == null)
+													{
+														toastr.warning(__t("Nothing was found for the given barcode"));
+														Grocy.FrontendHelpers.EndUiBusy($("form").first().attr("id"));
+														setTimeout(function()
+														{
+															Grocy.Components.ProductPicker.GetInputElement().focus();
+															Grocy.Components.ProductPicker.GetInputElement().select();
+														}, Grocy.FormFocusDelay);
+													}
+													else
+													{
+														window.location.href = U("/product/" + pluginResponse.id + "?flow=InplaceNewProductByExternalBarcodeLookupPlugin&returnto=" + encodeURIComponent(Grocy.CurrentUrlRelative + "?flow=InplaceNewProductWithName&" + embedded) + "&" + embedded);
+													}
+												
+												},
+												function(xhr)
+												{
+													Grocy.FrontendHelpers.ShowGenericError("Error while executing the barcode lookup plugin", xhr.response);
+													Grocy.FrontendHelpers.EndUiBusy($("form").first().attr("id"));
+												}
+											);
+											bootbox.hideAll();
+										});
+										Grocy.FrontendHelpers.EndUiBusy($("form").first().attr("id"));
+									}
+									else
+									{
+										window.location.href = U("/product/" + pluginResponse.id + "?flow=InplaceNewProductByExternalBarcodeLookupPlugin&returnto=" + encodeURIComponent(Grocy.CurrentUrlRelative + "?flow=InplaceNewProductWithName&" + embedded) + "&" + embedded);
+									}
 								}
 							},
 							function(xhr)
