@@ -10,12 +10,13 @@ use Grocy\Services\DatabaseService;
 class LocalBarcodeDatabase
 {
 	private $pdo;
-	private $dbPath = __DIR__ . '/grocery.db';
+	private $dbPath;
 	//private $dbPath = "sqlite:grocery.db";
 	private static $instance = null;
 
 	public function __construct()
 	{
+		$this->dbPath = $this->GetDbFilePath();
 		$this->pdo = new PDO("sqlite:" . $this->dbPath);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -73,6 +74,11 @@ class LocalBarcodeDatabase
 	protected function getDatabase()
 	{
 		return $this->getDatabaseService()->GetDbConnection();
+	}
+
+	private function GetDbFilePath()
+	{
+		return GROCY_DATAPATH . '/shared/' . defined('STOCK_BARCODE_LOOKUP_DATABASE') ? STOCK_BARCODE_LOOKUP_DATABASE : '';
 	}
 
 	protected function getDatabaseService()
