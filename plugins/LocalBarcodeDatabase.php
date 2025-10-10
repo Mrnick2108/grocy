@@ -78,7 +78,7 @@ class LocalBarcodeDatabase
 
 	private function GetDbFilePath()
 	{
-		return GROCY_DATAPATH . '/shared/' . defined('GROCY_STOCK_BARCODE_LOOKUP_DATABASE') ? GROCY_STOCK_BARCODE_LOOKUP_DATABASE : '';
+		return GROCY_DATAPATH . '/shared/' . (defined('GROCY_STOCK_BARCODE_LOOKUP_DATABASE') ? GROCY_STOCK_BARCODE_LOOKUP_DATABASE : '');
 	}
 
 	protected function getDatabaseService()
